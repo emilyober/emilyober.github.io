@@ -465,6 +465,7 @@
     }
 
     .entry-highlight strong { color: var(--gold); font-size: 1.18em; }
+    .entry-method-label { color: #f3ddb1; }
     .entry-media {
       display: grid;
       gap: .5rem;
@@ -708,10 +709,13 @@
             </button>
             <template id="boeing-details">
               <p class="entry-meta">Boeing Phantom Works · AI Mission Systems Intern · 2026</p>
+              <p class="entry-summary">Built a Python framework that coordinated specialized AI agents to design and test electromagnetic devices in CST Studio Suite.</p>
+              <p class="entry-method-label"><strong>How it works</strong></p>
+              <p>Specialized agents propose candidate designs, generate simulation code, and review geometry, physical constraints, and manufacturability. The Python framework runs the candidates in CST Studio Suite and scores them on an objective based on energy efficiency.</p>
+              <p>The experiment planner uses previous scores and failures to choose what to test next. The framework explored more than 20 design parameters across thousands of simulations and generated a candidate every ≈30 seconds.</p>
               <p class="entry-highlight"><strong>≈4×</strong> the baseline score on the energy efficiency optimization objective.</p>
-              <p class="entry-summary">Built a Python system that coordinated specialized AI agents to design and test electromagnetic devices in CST Studio Suite.</p>
-              <p>The system explored more than 20 design parameters, ran thousands of simulations, and generated a candidate every ≈30 seconds. It used prior results and failures to guide the next experiments. I handed off the optimization framework to the engineering team.</p>
-              <p>I also built a PyTorch pipeline for complex-valued RF data.</p>
+              <p>I handed off the optimization framework to the engineering team.</p>
+              <p>I also built a PyTorch pipeline for complex-valued RF data, including preprocessing, data representations, and model evaluation.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>Python</li>
@@ -784,11 +788,13 @@
               <p class="entry-meta">Founder and Lead ML Engineer · 2024–2025</p>
               <p class="entry-highlight"><strong>≈95% accuracy</strong> when classifying pain scores on held-out videos.</p>
               <p class="entry-summary">Built a computer vision system that detects mouse facial features and automates pain scoring for chronic pain research at the University of Minnesota’s Simone Lab.</p>
+              <p class="entry-method-label"><strong>How it works</strong></p>
+              <p>I curated and annotated ≈2,000 images from more than 40 videos, preprocessed the data, and trained YOLO models in PyTorch and TensorFlow for the facial-feature detection and pain-scoring pipeline.</p>
+              <p>I evaluated pain score classification on held-out videos, deployed the system for the Simone Lab’s research, and presented the work in a research poster.</p>
               <a class="entry-media" href="https://youtu.be/ahsW0zvVBDE" target="_blank" rel="noopener">
                 <span class="media-preview pain-demo-preview" aria-hidden="true"><span class="media-preview-label">▶</span></span>
                 <span>Watch the Pain Calculator demo on YouTube <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></span>
               </a>
-              <p>Curated ≈2,000 images from more than 40 videos and trained YOLO models in PyTorch and TensorFlow. I led the pipeline from annotation to deployment and presented the work in a research poster.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>YOLO</li>
@@ -837,7 +843,15 @@
             <template id="dem-details">
               <p class="entry-meta">In progress</p>
               <p class="entry-summary">Built a C++ discrete element method (DEM) simulator for particles in a rotating drum.</p>
-              <p>I’m developing a machine learning model that predicts contact impulses between nearby particles and at the drum wall. Each prediction currently advances the simulation by 10 DEM time steps. The next goal is to advance more steps per prediction while preserving particle mixing behavior.</p>
+              <p class="entry-method-label"><strong>How it works</strong></p>
+              <p>The C++ baseline uses a spatial grid to find nearby particles and a Hertz–Mindlin contact model that tracks friction history. I checked head-on, angled, and particle–wall collisions against LAMMPS.</p>
+              <p>The learned model uses recent particle motion and local geometry to predict impulses for nearby particle pairs and wall contacts. Those impulses update particle velocity and spin. The simulator applies gravity and prescribed drum motion directly.</p>
+              <p>Each prediction currently advances 10 DEM time steps. I’m testing how many steps it can advance while preserving mixing behavior.</p>
+              <p class="entry-method-label"><strong>Checkpoint results</strong></p>
+              <ul class="entry-actions">
+                <li><strong>50 ms rollout</strong> · 322 particles · 1,000 predictions · 241 µm position RMSE per coordinate</li>
+                <li><strong>Earlier checkpoint, 10 ms</strong> · 1.26× the speed of CPU DEM</li>
+              </ul>
               <figure class="entry-figure">
                 <video controls playsinline preload="none" width="800" height="578" poster="particle-simulator-poster.jpg" aria-label="Particle simulator experimental mixing setup">
                   <source src="particle-simulator-demo.mp4" type="video/mp4">
