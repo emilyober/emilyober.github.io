@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&amp;display=swap">
   <style>
     :root {
+      --card-width: clamp(7rem, 10.5vw, 8.5rem);
+      --card-height: calc(var(--card-width) * 1.38);
       color-scheme: dark;
       --font: Nunito, ui-rounded, "Avenir Next", Avenir, sans-serif;
       --display-font: "Zany Preview", var(--font);
@@ -87,8 +89,6 @@
     }
 
     .game-board {
-      --card-width: clamp(7rem, 10.5vw, 8.5rem);
-      --card-height: calc(var(--card-width) * 1.38);
       display: grid;
       flex: 1;
       grid-template-columns: calc(var(--card-width) * 2 + 1.8rem) minmax(0, 1fr);
@@ -123,7 +123,39 @@
     .portfolio-entry { border-bottom: 1px solid #efd09a47; padding: .6rem .3rem; }
     .portfolio-entry > summary { cursor: pointer; }
     .portfolio-entry[open] > summary { color: var(--gold); }
+    .portfolio-entry-preview {
+      display: block;
+      margin-top: .2rem;
+      color: #ddded0;
+      font-size: .93rem;
+      line-height: 1.45;
+    }
+    .portfolio-entry[open] .portfolio-entry-preview { display: none; }
     .portfolio-entry-body { max-width: 60ch; padding: .55rem 0 .4rem 1.15rem; }
+    .coursework-body { max-width: none; padding-left: 0; }
+    .coursework-body h4 { margin: .5rem 0 .45rem; color: var(--gold); font-size: 1.05rem; }
+    .coursework-body h4:not(:first-child) { margin-top: 1.35rem; }
+    .coursework-body h5 { margin: .9rem 0 .45rem; color: #f3ddb1; font-size: .92rem; }
+    .course-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+      gap: .4rem .65rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .course-list li {
+      padding: .5rem .65rem;
+      border: 1px solid #efd09a47;
+      border-radius: .35rem;
+      background: #102d27;
+      font-size: .92rem;
+      line-height: 1.35;
+    }
+    .course-code { display: block; margin-bottom: .12rem; color: #f3ddb1; font-size: .8rem; font-weight: 700; }
+    .course-status { margin-left: .35rem; color: #dddcd0; font-weight: 600; }
+    .coursework-all:not([open]) .coursework-collapse,
+    .coursework-all[open] .coursework-expand { display: none; }
     .decks {
       display: flex;
       flex-wrap: wrap;
@@ -303,9 +335,9 @@
     .hand.is-dealing .card-slot > .playing-card { animation: deal var(--deal-duration) cubic-bezier(.2,.7,.3,1) var(--delay) both; }
 
     @keyframes deal {
-      0% { opacity: 0; transform: translate(var(--deal-x), var(--deal-y)); }
-      2% { opacity: 1; }
-      100% { opacity: 1; transform: translate(0, 0); }
+      0% { opacity: 0; transform: translate(var(--deal-x), var(--deal-y)) rotateY(-180deg); }
+      12% { opacity: 1; }
+      100% { opacity: 1; transform: translate(0, 0) rotateY(0deg); }
     }
 
     .playing-card {
@@ -327,14 +359,17 @@
     }
 
     .card-front {
+      --face-padding-inline: .55rem;
+      --face-border-width: 1px;
       display: flex;
-      container-type: inline-size;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: .55rem;
-      padding: 1.45rem .55rem;
+      padding: 1.45rem var(--face-padding-inline);
+      border-width: var(--face-border-width);
       background: linear-gradient(145deg, #fff6e3, #efe2c3);
+      text-align: center;
     }
 
     .playing-card::after {
@@ -350,18 +385,12 @@
       pointer-events: none;
     }
 
-    .hand.is-dealing .playing-card::after { animation: deal-face var(--deal-duration) steps(1) var(--delay) both; }
-    .playing-card:is(.is-playing, .returning-face) { transform-style: preserve-3d; }
-    .playing-card:is(.is-playing, .returning-face) .card-front { backface-visibility: hidden; }
-    .playing-card:is(.is-playing, .returning-face)::after {
+    .playing-card:is(.hand.is-dealing *, .is-playing, .returning-face) { transform-style: preserve-3d; }
+    .playing-card:is(.hand.is-dealing *, .is-playing, .returning-face) .card-front { backface-visibility: hidden; }
+    .playing-card:is(.hand.is-dealing *, .is-playing, .returning-face)::after {
       opacity: 1;
       transform: rotateY(180deg);
       backface-visibility: hidden;
-    }
-
-    @keyframes deal-face {
-      0% { opacity: 1; }
-      52%, 100% { opacity: 0; }
     }
 
     button.playing-card:hover .card-front {
@@ -369,23 +398,24 @@
       box-shadow: 0 0 0 2px var(--gold), 0 .4rem 1rem #081e1b6e;
     }
 
-    .hand .card-slot > .playing-card[aria-expanded="true"] { visibility: hidden; animation: none; }
+    .hand .card-slot:has(> .playing-card[aria-expanded="true"]) { display: none; }
     .ink { --suit-color: #21413c; }
     .red { --suit-color: #913a40; }
     .rank { position: absolute; top: .45rem; left: .55rem; color: var(--suit-color); font: 700 .95rem/1.05 Georgia, serif; }
     .rank-bottom { inset: auto .55rem .45rem auto; transform: rotate(180deg); }
     .card-title {
       max-width: 100%;
-      font-size: min(1.2rem, calc(100cqi / var(--title-width, 5.75)));
+      --title-space: calc(var(--card-width) - 2 * (var(--face-padding-inline) + var(--face-border-width)));
+      font-size: min(1.2rem, calc(var(--title-space) / var(--title-width, 5.75)));
       line-height: 1.24;
       letter-spacing: .05em;
       text-wrap: balance;
       hyphens: none;
-      word-break: normal;
+      overflow-wrap: anywhere;
     }
 
     .card-word { white-space: nowrap; }
-    .card-category { color: #45594e; font-size: .8rem; font-weight: 700; letter-spacing: .04em; }
+    .card-category { max-width: 100%; color: #45594e; font-size: .8rem; font-weight: 700; line-height: 1.2; letter-spacing: .04em; overflow-wrap: anywhere; }
 
     .played-card {
       display: grid;
@@ -395,7 +425,7 @@
       scroll-margin-top: 1rem;
     }
 
-    #played-face { z-index: 2; pointer-events: none; text-align: center; }
+    #played-face { z-index: 2; pointer-events: none; }
     .returning-face { position: fixed; z-index: 5; pointer-events: none; }
     .hand .playing-card.is-returning { visibility: hidden; }
     .played-copy { min-width: 0; }
@@ -446,15 +476,21 @@
     .entry-media:hover .media-preview { border-color: var(--gold); }
     .entry-media .media-preview-label { padding: .4rem .75rem; font-size: 1.15rem; }
     .entry-figure { width: min(100%, 32rem); margin: .9rem 0 0; }
-    .entry-figure img { display: block; width: 100%; height: auto; border-radius: .4rem; }
+    .entry-figure :is(img, video) { display: block; width: 100%; height: auto; border-radius: .4rem; }
     .entry-figure figcaption { margin-top: .35rem; color: #f3ddb1; font-size: .88rem; line-height: 1.4; }
     .entry-resource { display: inline-block; margin-top: .65rem; font-size: .95rem; font-weight: 800; }
+    .entry-actions { margin: .7rem 0 0; padding-left: 1.15rem; line-height: 1.55; }
+    .entry-actions li + li { margin-top: .3rem; }
     .skills-label { margin-top: .85rem; color: #f3ddb1; font-size: .9rem; }
     .entry-skills { display: flex; flex-wrap: wrap; gap: .35rem; margin: .3rem 0 0; padding: 0; list-style: none; }
     .entry-skills li {
-      display: inline-flex;
+      display: grid;
+      grid-template-columns: .85rem minmax(0, 1fr);
       align-items: center;
       gap: .42rem;
+      min-width: 0;
+      max-width: 100%;
+      overflow-wrap: anywhere;
       padding: .14rem .5rem;
       border: 1px solid #e8d4a858;
       border-radius: 1rem;
@@ -463,7 +499,7 @@
 
     .entry-skills li::before {
       content: "";
-      flex: 0 0 .85rem;
+      width: 100%;
       aspect-ratio: 1;
       border-radius: 50%;
       background:
@@ -473,7 +509,6 @@
     }
     .entry-more { margin-top: .75rem; }
     .entry-more summary { width: fit-content; color: var(--gold); font-size: .9rem; cursor: pointer; }
-    .entry-more p { font-size: .97rem; }
     @media (max-width: 48rem) {
       .game-board { display: block; }
       .intro { justify-content: flex-start; flex-direction: row-reverse; text-align: left; }
@@ -516,15 +551,14 @@
     }
 
     @media (max-width: 30rem) {
-      .game-board { --card-width: clamp(6.75rem, 26vw, 8rem); }
+      :root { --card-width: clamp(6.75rem, 26vw, 8rem); }
       .played-card { grid-template-columns: minmax(0, 1fr); justify-items: start; }
       #played-face { justify-self: center; }
       .cards { gap: .65rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .hand.is-dealing .card-slot > .playing-card,
-      .hand.is-dealing .playing-card::after { animation: none; }
+      .hand.is-dealing .card-slot > .playing-card { animation: none; }
     }
   </style>
 </head>
@@ -536,7 +570,7 @@
           <h1>Emily Oberleitner</h1>
           <p>Stanford EE · Applied ML &amp; Computer Vision</p>
           <div class="player-links">
-            <button class="view-link" id="view-toggle" type="button" aria-controls="portfolio-list" aria-expanded="false">View portfolio as a list</button>
+            <button class="view-link" id="view-toggle" type="button" aria-controls="portfolio-list" aria-expanded="false">List view</button>
             <a href="https://www.linkedin.com/in/emily-oberleitner-b14b1128b">LinkedIn</a>
           </div>
         </div>
@@ -546,7 +580,8 @@
       <section class="education" aria-labelledby="education-heading">
         <h2 id="education-heading">Education</h2>
         <p class="school">Stanford University</p>
-        <p>B.S. Electrical Engineering · GPA 3.9/4.0</p>
+        <p>B.S. Electrical Engineering</p>
+        <p>GPA 3.9/4.0</p>
         <p><button class="view-link" id="coursework-link" type="button" aria-controls="list-coursework" aria-expanded="false">Coursework</button></p>
       </section>
       <section class="deck-area" id="portfolio-decks" aria-label="Portfolio decks" tabindex="-1">
@@ -600,7 +635,7 @@
                 <span class="featured-card-top"><span class="featured-suit" aria-hidden="true">♠</span> Experience <span class="featured-arrow" aria-hidden="true">→</span></span>
                 <span class="featured-title" id="featured-boeing">Boeing Phantom Works</span>
                 <span class="featured-description" id="featured-boeing-description">Built a Python system that coordinated AI agents to design and test electromagnetic devices.</span>
-                <span class="featured-result" id="featured-boeing-result"><strong>About 4×</strong> the baseline score on the design objective</span>
+                <span class="featured-result" id="featured-boeing-result"><strong>≈4×</strong> the baseline score on the energy efficiency optimization objective</span>
               </button>
             </li>
             <li>
@@ -611,7 +646,7 @@
                   Built a computer vision system that reads mouse facial features to automate pain scoring for chronic pain research.
                   <span class="media-preview pain-demo-preview" aria-hidden="true"><span class="media-preview-label">Video demo</span></span>
                 </span>
-                <span class="featured-result" id="featured-pain-result"><strong>About 95%</strong> pain-score classification accuracy</span>
+                <span class="featured-result" id="featured-pain-result"><strong>≈95% accuracy</strong> when classifying pain scores on held-out videos</span>
               </button>
             </li>
             <li>
@@ -619,7 +654,7 @@
                 <span class="featured-card-top"><span class="featured-suit" aria-hidden="true">♥</span> Stanford CS231N <span class="featured-arrow" aria-hidden="true">→</span></span>
                 <span class="featured-title" id="featured-surgery">Neurosurgical Phase Recognition</span>
                 <span class="featured-description" id="featured-surgery-description">Co-authored a study comparing four models that identify phases of aneurysm-clipping surgery from video.</span>
-                <span class="featured-result" id="featured-surgery-result"><strong>0.944</strong> segmental F1@10 for the best model configuration</span>
+                <span class="featured-result" id="featured-surgery-result"><strong>0.944</strong> segmental F1@10 on held-out validation videos</span>
               </button>
             </li>
           </ul>
@@ -652,17 +687,14 @@
             </button>
             <template id="doppler-details">
               <p class="entry-meta">CorRen Medical · R&amp;D Engineering Intern · 2023–2025</p>
-              <p>Prototyped and tested an AI-enabled Doppler device for detecting peripheral arterial disease.</p>
+              <p class="entry-summary">Prototyped and tested an AI-enabled Doppler device for detecting peripheral arterial disease.</p>
+              <p>Wrote design specifications, test protocols, and performance reports. I used MATLAB to map ultrasonic fields and anatomy research to refine crystal placement in the probe.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>MATLAB</li>
                 <li>Ultrasonic field mapping</li>
                 <li>Performance testing</li>
               </ul>
-              <details class="entry-more">
-                <summary>More detail</summary>
-                <p>Wrote design specifications, test protocols, and performance reports. I used MATLAB to map ultrasonic fields and anatomy research to refine crystal placement in the probe.</p>
-              </details>
             </template>
           </div>
           <div class="card-slot">
@@ -676,8 +708,10 @@
             </button>
             <template id="boeing-details">
               <p class="entry-meta">Boeing Phantom Works · AI Mission Systems Intern · 2026</p>
-              <p class="entry-highlight"><strong>About 4×</strong> improvement in the optimization objective over baseline designs.</p>
-              <p>Built a Python system that coordinated specialized AI agents to design and test electromagnetic devices in CST Studio Suite.</p>
+              <p class="entry-highlight"><strong>≈4×</strong> the baseline score on the energy efficiency optimization objective.</p>
+              <p class="entry-summary">Built a Python system that coordinated specialized AI agents to design and test electromagnetic devices in CST Studio Suite.</p>
+              <p>The system explored more than 20 design parameters, ran thousands of simulations, and generated a candidate every ≈30 seconds. It used prior results and failures to guide the next experiments. I handed off the optimization framework to the engineering team.</p>
+              <p>I also built a PyTorch pipeline for complex-valued RF data.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>Python</li>
@@ -686,10 +720,6 @@
                 <li>PyTorch</li>
                 <li>RF simulation</li>
               </ul>
-              <details class="entry-more">
-                <summary>More detail</summary>
-                <p>The system explored more than 20 design parameters, ran thousands of simulations, and generated a candidate about every 30 seconds. It used prior results and failures to guide the next experiments. I also built a PyTorch pipeline for complex-valued RF data and handed the system off to the engineering team.</p>
-              </details>
             </template>
           </div>
           <div class="card-slot">
@@ -703,7 +733,8 @@
             </button>
             <template id="facilities-details">
               <p class="entry-meta">Minnesota Twins · App Development and Data Intern · 2025</p>
-              <p>Built a full-stack app that replaced a spreadsheet for tracking room status, open tasks, and completed maintenance.</p>
+              <p class="entry-summary">Built a full-stack app that replaced a spreadsheet for tracking room status, open tasks, and completed maintenance.</p>
+              <p>Owned the interface and core application logic. I worked with another intern on the Prisma and SQL Server integration and iterated through code reviews in Azure DevOps.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>Next.js</li>
@@ -712,10 +743,6 @@
                 <li>Prisma</li>
                 <li>SQL Server</li>
               </ul>
-              <details class="entry-more">
-                <summary>More detail</summary>
-                <p>Owned the interface and core application logic. I worked with another intern on the Prisma and SQL Server integration and iterated through code reviews in Azure DevOps.</p>
-              </details>
             </template>
           </div>
           <div class="card-slot">
@@ -729,17 +756,14 @@
             </button>
             <template id="nuwellis-details">
               <p class="entry-meta">Nuwellis · Consultant · 2025</p>
-              <p>Designed test fixtures and ran in vitro experiments for a blood-filtration vascular-access system.</p>
+              <p class="entry-summary">Designed test fixtures and ran in vitro experiments for a blood-filtration vascular-access system.</p>
+              <p>Worked with engineers and clinicians on testing methods and device performance, then shared findings to guide the next design iteration.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>Hardware fixtures</li>
                 <li>Pneumatics</li>
                 <li>In vitro testing</li>
               </ul>
-              <details class="entry-more">
-                <summary>More detail</summary>
-                <p>Worked with engineers and clinicians on testing methods and device performance, then shared findings to guide the next design iteration.</p>
-              </details>
             </template>
           </div>
         </div>
@@ -758,12 +782,13 @@
             </button>
             <template id="pain-details">
               <p class="entry-meta">Founder and Lead ML Engineer · 2024–2025</p>
-              <p class="entry-highlight"><strong>About 95%</strong> pain-score classification accuracy.</p>
-              <p>Built a computer vision system that detects mouse facial features and automates pain scoring for chronic pain research at the University of Minnesota’s Simone Lab.</p>
+              <p class="entry-highlight"><strong>≈95% accuracy</strong> when classifying pain scores on held-out videos.</p>
+              <p class="entry-summary">Built a computer vision system that detects mouse facial features and automates pain scoring for chronic pain research at the University of Minnesota’s Simone Lab.</p>
               <a class="entry-media" href="https://youtu.be/ahsW0zvVBDE" target="_blank" rel="noopener">
                 <span class="media-preview pain-demo-preview" aria-hidden="true"><span class="media-preview-label">▶</span></span>
                 <span>Watch the Pain Calculator demo on YouTube <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></span>
               </a>
+              <p>Curated ≈2,000 images from more than 40 videos and trained YOLO models in PyTorch and TensorFlow. I led the pipeline from annotation to deployment and presented the work in a research poster.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>YOLO</li>
@@ -772,10 +797,6 @@
                 <li>Computer vision</li>
                 <li>Model deployment</li>
               </ul>
-              <details class="entry-more">
-                <summary>More detail</summary>
-                <p>Curated about 2,000 images from more than 40 videos and trained YOLO models in PyTorch and TensorFlow. I led the pipeline from annotation to deployment and presented the work in a research poster.</p>
-              </details>
             </template>
           </div>
           <div class="card-slot">
@@ -788,13 +809,14 @@
             </button>
             <template id="surgery-details">
               <p class="entry-meta">Stanford CS231N · Research Co-Author · 2026</p>
-              <p class="entry-highlight"><strong>0.944</strong> segmental F1@10 and <strong>0.789</strong> F1@50 with the best configuration.</p>
-              <p>Co-authored a study comparing four models for identifying phases of aneurysm-clipping surgery.</p>
+              <p class="entry-highlight"><strong>0.944</strong> segmental F1@10 and <strong>0.789</strong> F1@50 on held-out validation videos.</p>
+              <p class="entry-summary">Co-authored a study comparing four models for identifying phases of aneurysm-clipping surgery.</p>
               <figure class="entry-figure">
                 <img src="data:image/png;base64,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" width="745" height="330" loading="lazy" alt="Three timelines compare labeled surgical phases, raw predictions that switch phases frequently, and smoother predictions after Viterbi decoding.">
                 <figcaption>In this two-minute clip, Viterbi decoding reduces rapid phase switching. Figure 8 from the paper.</figcaption>
               </figure>
               <a class="entry-resource" href="neurosurgical-phase-recognition.pdf" target="_blank" rel="noopener">Read the CS231N paper (PDF)<span class="sr-only"> (opens in a new tab)</span></a>
+              <p>Compared ResNet-50, CNN+LSTM, MS-TCN, and an OperA-inspired causal Transformer on 48 videos and more than 40,000 labeled frames. Identified leakage in frame-level splits and switched evaluation to held-out videos. We reimplemented the causal Transformer pipeline. The best configuration combined the Transformer with Viterbi decoding.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>PyTorch</li>
@@ -802,10 +824,6 @@
                 <li>Video classification</li>
                 <li>Model validation</li>
               </ul>
-              <details class="entry-more">
-                <summary>More detail</summary>
-                <p>Compared ResNet-50, CNN+LSTM, MS-TCN, and an OperA-inspired causal Transformer on 48 videos and more than 40,000 labeled frames. I identified leakage in frame-level splits and switched evaluation to held-out videos. The best configuration combined the Transformer with Viterbi decoding.</p>
-              </details>
             </template>
           </div>
           <div class="card-slot">
@@ -818,7 +836,15 @@
             </button>
             <template id="dem-details">
               <p class="entry-meta">In progress</p>
-              <p>I’m building a discrete element method (DEM) particle simulator that uses machine learning to model contact between particles.</p>
+              <p class="entry-summary">Built a C++ discrete element method (DEM) simulator for particles in a rotating drum.</p>
+              <p>I’m developing a machine learning model that predicts contact impulses between nearby particles and at the drum wall. Each prediction currently advances the simulation by 10 DEM time steps. The next goal is to advance more steps per prediction while preserving particle mixing behavior.</p>
+              <figure class="entry-figure">
+                <video controls playsinline preload="none" width="800" height="578" poster="particle-simulator-poster.jpg" aria-label="Particle simulator experimental mixing setup">
+                  <source src="particle-simulator-demo.mp4" type="video/mp4">
+                  <a href="particle-simulator-demo.mp4">Watch the particle simulator clip</a>
+                </video>
+                <figcaption>Experimental mixing setup with 322 particles in a rotating drum, shown at 3× the original playback speed.</figcaption>
+              </figure>
               <a class="entry-resource" href="https://github.com/emilyober/pharmaparticlesim" target="_blank" rel="noopener">View the particle simulator code on GitHub<span class="sr-only"> (opens in a new tab)</span></a>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
@@ -838,7 +864,15 @@
             </button>
             <template id="cafe-tycoon-details">
               <p class="entry-meta">In progress</p>
-              <p>I’m building Cafe Tycoon, a café management game in Godot.</p>
+              <p class="entry-summary">I’m building Cafe Tycoon, a café management game set in the afterlife.</p>
+              <p>The Godot prototype includes branching dialogue, coffee brewing, and a customer queue with orders that vary by recipe and temperature.</p>
+              <figure class="entry-figure">
+                <video controls playsinline preload="none" width="1440" height="810" poster="cafe-tycoon-reel-poster.jpg" aria-label="Cafe Tycoon gameplay highlights">
+                  <source src="cafe-tycoon-highlight-reel.mp4" type="video/mp4">
+                  <a href="cafe-tycoon-highlight-reel.mp4">Watch the Cafe Tycoon gameplay reel</a>
+                </video>
+                <figcaption>A 17-second gameplay reel showing dialogue choices, coffee brewing, and serving a ghost.</figcaption>
+              </figure>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>Godot</li>
@@ -851,24 +885,22 @@
               <span class="card-front">
                 <span class="rank" aria-hidden="true">10<br>♥</span>
                 <span class="card-title" style="--title-width: 6.7"><span class="card-word">S-DES</span> Quantum Cryptanalysis</span>
+                <span class="card-category">MIT Beaver Works</span>
                 <span class="rank rank-bottom" aria-hidden="true">10<br>♥</span>
               </span>
             </button>
             <template id="quantum-details">
               <p class="entry-meta">MIT BWSI Quantum Software · Noether’s Knights · 2024</p>
-              <p class="entry-highlight">Presented to <strong>about 400</strong> students and MIT alumni.</p>
-              <p>Worked with Noether’s Knights to implement a published S-DES decryption method in Qiskit.</p>
+              <p class="entry-highlight">Presented to <strong>≈400</strong> students and MIT alumni.</p>
+              <p class="entry-summary">Our team, Noether’s Knights, implemented a published S-DES decryption method in Qiskit.</p>
               <a class="entry-resource" href="https://github.com/agupt0318/BWSI_Noether-s_Nights" target="_blank" rel="noopener">View team code on GitHub<span class="sr-only"> (opens in a new tab)</span></a>
+              <p>Received an Outstanding Student Award from an MITRE instructor.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>Qiskit</li>
                 <li>Quantum circuits</li>
                 <li>Cryptanalysis</li>
               </ul>
-              <details class="entry-more">
-                <summary>More detail</summary>
-                <p>Received an Outstanding Student Award from an MITRE instructor.</p>
-              </details>
             </template>
           </div>
         </div>
@@ -887,10 +919,18 @@
             </button>
             <template id="acme-lab-details">
               <p class="entry-meta">Stanford University · Current lab</p>
-              <p>I’m part of the ACME Lab at Stanford.</p>
+              <ul class="entry-actions">
+                <li>Assemble printed circuit boards for lab prototypes.</li>
+                <li>Bring up a Bluetooth Low Energy (BLE) development board and verify SPI signals with an oscilloscope.</li>
+              </ul>
+              <p class="entry-summary">Training a machine learning model to predict an emitter’s coordinates from magnetic field data collected by beacons.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
-                <li>Lab research</li>
+                <li>PCB assembly</li>
+                <li>Embedded firmware</li>
+                <li>Bluetooth Low Energy</li>
+                <li>SPI and I²C</li>
+                <li>Oscilloscope debugging</li>
               </ul>
             </template>
           </div>
@@ -904,11 +944,11 @@
             </button>
             <template id="cmu-lab-details">
               <p class="entry-meta">Carnegie Mellon University · Research Intern</p>
-              <p>Supported neuroengineering experiments through lab setup and data collection.</p>
+              <p class="entry-summary">Learned neuromechatronics techniques and helped score pain behaviors in mice during lab experiments.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
-                <li>Experimental setup</li>
-                <li>Data collection</li>
+                <li>Neuromechatronics</li>
+                <li>Behavioral pain scoring</li>
               </ul>
             </template>
           </div>
@@ -922,12 +962,14 @@
             </button>
             <template id="simone-lab-details">
               <p class="entry-meta">University of Minnesota · Research Intern</p>
-              <p>Supported chronic pain research in the Simone Lab. The computer vision work from this research became Pain Calculator.</p>
+              <p class="entry-summary">Conducted von Frey tests and performed patch-clamp recordings for chronic pain research.</p>
+              <p>Developed the computer vision system that became Pain Calculator.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>Chronic pain research</li>
                 <li>Computer vision</li>
-                <li>Data collection</li>
+                <li>von Frey testing</li>
+                <li>Patch-clamp recording</li>
               </ul>
             </template>
           </div>
@@ -941,7 +983,7 @@
             </button>
             <template id="asme-details">
               <p class="entry-meta">ASME Design of Medical Devices Conference · Sole Author · 2024</p>
-              <p>Proposed a new way to standardize Doppler system sensitivity. I published it as ASME Paper DMD2024-1093 and presented it at the Design of Medical Devices Conference.</p>
+              <p class="entry-summary">Proposed a standard for Doppler system sensitivity in ASME Paper DMD2024-1093 and presented it at the Design of Medical Devices Conference.</p>
               <a class="entry-resource" href="https://doi.org/10.1115/DMD2024-1093" target="_blank" rel="noopener">Read the ASME Doppler paper<span class="sr-only"> (opens in a new tab)</span></a>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
@@ -967,7 +1009,8 @@
             </button>
             <template id="robotics-details">
               <p class="entry-meta">Engineer and Officer · 2025–2026</p>
-              <p>Designed BattleBots wheels and structural components in Fusion 360 and helped fabricate, assemble, and integrate the competition robot.</p>
+              <p class="entry-summary">Designed BattleBots wheels and structural components in Fusion 360 and helped fabricate, assemble, and integrate the competition robot.</p>
+              <p>Wrote and debugged Arduino prototype controls and helped prepare a grant proposal for team projects.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>Fusion 360</li>
@@ -975,10 +1018,6 @@
                 <li>Fabrication</li>
                 <li>Systems integration</li>
               </ul>
-              <details class="entry-more">
-                <summary>More detail</summary>
-                <p>Wrote and debugged Arduino prototype controls and helped prepare a grant proposal for team projects.</p>
-              </details>
             </template>
           </div>
           <div class="card-slot">
@@ -992,7 +1031,7 @@
             <template id="joyce-ivy-details">
               <p class="entry-meta">Senior Fellow · 2023–2025</p>
               <p class="entry-highlight">Helped raise <strong>$10,700</strong> during Giving Tuesday.</p>
-              <p>Co-led a network of more than 1,000 alumnae.</p>
+              <p class="entry-summary">Co-led a network of more than 1,000 alumnae.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>Alumnae engagement</li>
@@ -1012,7 +1051,7 @@
             <template id="chemistry-details">
               <p class="entry-meta">University of Minnesota Twin Cities · Lead Chemistry TA · 2024–2025</p>
               <p class="entry-highlight"><strong>545</strong> engineering undergraduates enrolled in the course.</p>
-              <p>Led general chemistry support sessions.</p>
+              <p class="entry-summary">Led general chemistry support sessions.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>General chemistry</li>
@@ -1031,10 +1070,11 @@
             </button>
             <template id="science-olympiad-details">
               <p class="entry-meta">Stanford Science Olympiad</p>
-              <p>I help lead Stanford Science Olympiad.</p>
+              <p class="entry-summary">Run social media and help book rooms for Stanford Science Olympiad events.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
-                <li>Team leadership</li>
+                <li>Social media management</li>
+                <li>Event logistics</li>
               </ul>
             </template>
           </div>
@@ -1054,7 +1094,7 @@
             </button>
             <template id="library-tutoring-details">
               <p class="entry-meta">Hennepin County Library</p>
-              <p>Tutored K–12 students in math.</p>
+              <p class="entry-summary">Tutored K–12 students in math.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>Math tutoring</li>
@@ -1071,7 +1111,7 @@
             </button>
             <template id="prop-shop-details">
               <p class="entry-meta">PROP Shop</p>
-              <p>Helped sort clothing, furniture, and household donations.</p>
+              <p class="entry-summary">Helped sort clothing, furniture, and household donations.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>Donation sorting</li>
@@ -1089,7 +1129,7 @@
             </button>
             <template id="animal-hospital-details">
               <p class="entry-meta">Mission Animal Hospital</p>
-              <p>Volunteered with Mission Animal Hospital.</p>
+              <p class="entry-summary">Volunteered with Mission Animal Hospital.</p>
               <div class="skills-label">Skills used</div>
               <ul class="entry-skills" aria-label="Skills used">
                 <li>Community service</li>
@@ -1111,8 +1151,8 @@
               </span>
             </button>
             <template id="waicy-honor-details">
-              <p class="entry-highlight"><strong>First place globally</strong> in a competition spanning about 29,000 teams from 89 countries.</p>
-              <p>Won the Gold Award for Pain Calculator at the World Artificial Intelligence Competition for Youth.</p>
+              <p class="entry-highlight"><strong>Global Gold Award</strong> in the high school AI Showcase track.</p>
+              <p class="entry-summary">Won for Pain Calculator at the 2024 World Artificial Intelligence Competition for Youth.</p>
               <div class="skills-label">Recognition area</div>
               <ul class="entry-skills" aria-label="Recognition area">
                 <li>Computer vision</li>
@@ -1124,12 +1164,12 @@
             <button class="playing-card ink" type="button" aria-controls="played-card" aria-expanded="false">
               <span class="card-front">
                 <span class="rank" aria-hidden="true">K<br>★</span>
-                <span class="card-title" style="--title-width: 5.8">National Merit Semifinalist</span>
+                <span class="card-title" style="--title-width: 5.8">National Merit Finalist and Scholar</span>
                 <span class="rank rank-bottom" aria-hidden="true">K<br>★</span>
               </span>
             </button>
             <template id="merit-honor-details">
-              <p>Named a National Merit Semifinalist.</p>
+              <p class="entry-summary">Named a National Merit Finalist and Scholar.</p>
               <div class="skills-label">Recognition area</div>
               <ul class="entry-skills" aria-label="Recognition area">
                 <li>Academic achievement</li>
@@ -1145,7 +1185,7 @@
               </span>
             </button>
             <template id="silberberg-honor-details">
-              <p>Received the University of Minnesota Silberberg Award in Chemistry.</p>
+              <p class="entry-summary">Received the University of Minnesota Silberberg Award in Chemistry.</p>
               <div class="skills-label">Recognition area</div>
               <ul class="entry-skills" aria-label="Recognition area">
                 <li>Chemistry</li>
@@ -1156,13 +1196,13 @@
             <button class="playing-card ink" type="button" aria-controls="played-card" aria-expanded="false">
               <span class="card-front">
                 <span class="rank" aria-hidden="true">J<br>★</span>
-                <span class="card-title" style="--title-width: 6.05">Beaver Works Outstanding Student Award</span>
+                <span class="card-title" style="--title-width: 6.05">MIT Beaver Works Outstanding Student Award</span>
                 <span class="rank rank-bottom" aria-hidden="true">J<br>★</span>
               </span>
             </button>
             <template id="beaver-works-honor-details">
               <p class="entry-meta">MIT Beaver Works Summer Institute</p>
-              <p>Received an Outstanding Student Award from an MITRE instructor during the quantum software program.</p>
+              <p class="entry-summary">Received an Outstanding Student Award from an MITRE instructor during the quantum software program.</p>
               <div class="skills-label">Recognition area</div>
               <ul class="entry-skills" aria-label="Recognition area">
                 <li>Quantum software</li>
@@ -1178,7 +1218,7 @@
               </span>
             </button>
             <template id="aspirations-honor-details">
-              <p>Named a Minnesota state winner of NCWIT Aspirations in Computing.</p>
+              <p class="entry-summary">Named a Minnesota state winner of NCWIT Aspirations in Computing.</p>
               <div class="skills-label">Recognition area</div>
               <ul class="entry-skills" aria-label="Recognition area">
                 <li>Computing</li>
@@ -1195,7 +1235,7 @@
             </button>
             <template id="joyce-ivy-honor-details">
               <p class="entry-highlight"><strong>$4,000</strong> scholarship.</p>
-              <p>Received a Joyce Ivy Foundation scholarship to study neurobiology in a Harvard summer program.</p>
+              <p class="entry-summary">Received a Joyce Ivy Foundation scholarship to study neurobiology in a Harvard summer program.</p>
               <div class="skills-label">Recognition area</div>
               <ul class="entry-skills" aria-label="Recognition area">
                 <li>Neurobiology</li>
@@ -1212,16 +1252,94 @@
           <h3>Education</h3>
           <details class="portfolio-entry" id="list-coursework">
             <summary>Coursework and prior study</summary>
-            <div class="portfolio-entry-body">
-              <p class="entry-meta">Stanford University · B.S. Electrical Engineering · GPA 3.9/4.0</p>
-              <div class="skills-label">Course topics</div>
-              <ul class="entry-skills" aria-label="Course topics">
-                <li>Deep learning for computer vision</li>
-                <li>Robot autonomy</li>
-                <li>Signals and systems</li>
-                <li>Machine architecture</li>
+            <div class="portfolio-entry-body coursework-body">
+              <h4>Selected coursework</h4>
+              <h5>AI &amp; Robotics</h5>
+              <ul class="course-list" role="list">
+                <li><span class="course-code">CS 231N · Stanford</span>Deep Learning for Computer Vision</li>
+                <li><span class="course-code">EE 160A · Stanford <span class="course-status">· In progress</span></span>Principles of Robot Autonomy I</li>
               </ul>
-              <p>Completed dual-enrollment coursework at the University of Minnesota Twin Cities.</p>
+              <h5>Electrical &amp; Computer Engineering</h5>
+              <ul class="course-list" role="list">
+                <li><span class="course-code">EE 102A · Stanford <span class="course-status">· In progress</span></span>Signals and Systems I</li>
+                <li><span class="course-code">CSCI 2021 · UMN Twin Cities</span>Machine Architecture and Organization</li>
+              </ul>
+              <h5>Computer Science</h5>
+              <ul class="course-list" role="list">
+                <li><span class="course-code">CS 106B · Stanford</span>Programming Abstractions</li>
+                <li><span class="course-code">CSCI 1933 · UMN Twin Cities</span>Introduction to Algorithms and Data Structures</li>
+              </ul>
+              <h5>Math &amp; Probability</h5>
+              <ul class="course-list" role="list">
+                <li><span class="course-code">EE 178 · Stanford</span>Probabilistic Systems Analysis</li>
+                <li><span class="course-code">CSCI 2033 · UMN Twin Cities</span>Elementary Computational Linear Algebra</li>
+              </ul>
+              <details class="entry-more coursework-all">
+                <summary><span class="coursework-expand">Show all 41 courses</span><span class="coursework-collapse">Hide full course list</span></summary>
+                <h4>AI &amp; Robotics</h4>
+                <ul class="course-list" role="list">
+                  <li><span class="course-code">CS 231N · Stanford</span>Deep Learning for Computer Vision</li>
+                  <li><span class="course-code">EE 160A · Stanford <span class="course-status">· In progress</span></span>Principles of Robot Autonomy I</li>
+                </ul>
+                <h4>Electrical &amp; Computer Engineering</h4>
+                <ul class="course-list" role="list">
+                  <li><span class="course-code">EE 102A · Stanford <span class="course-status">· In progress</span></span>Signals and Systems I</li>
+                  <li><span class="course-code">CSCI 2021 · UMN Twin Cities</span>Machine Architecture and Organization</li>
+                  <li><span class="course-code">ENGR 40M · Stanford</span>An Intro to Making: What Is EE?</li>
+                  <li><span class="course-code">EE 65 · Stanford</span>Modern Physics for Engineers</li>
+                  <li><span class="course-code">EE 100 · Stanford <span class="course-status">· In progress</span></span>The Electrical Engineering Profession</li>
+                  <li><span class="course-code">MATSCI 83N · Stanford</span>Great Inventions That Matter</li>
+                </ul>
+                <h4>Computer Science</h4>
+                <ul class="course-list" role="list">
+                  <li><span class="course-code">CS 106B · Stanford</span>Programming Abstractions</li>
+                  <li><span class="course-code">CSCI 1933 · UMN Twin Cities</span>Introduction to Algorithms and Data Structures</li>
+                  <li><span class="course-code">CSCI 1133 · UMN Twin Cities</span>Introduction to Programming Concepts</li>
+                  <li><span class="course-code">CSCI 2011 · UMN Twin Cities</span>Discrete Structures</li>
+                </ul>
+                <h4>Math &amp; Probability</h4>
+                <ul class="course-list" role="list">
+                  <li><span class="course-code">EE 178 · Stanford</span>Probabilistic Systems Analysis</li>
+                  <li><span class="course-code">CSCI 2033 · UMN Twin Cities</span>Elementary Computational Linear Algebra</li>
+                  <li><span class="course-code">MATH 53 · Stanford</span>Differential Equations with Linear Algebra, Fourier Methods, and Modern Applications</li>
+                  <li><span class="course-code">MATH 1471 · UMN Twin Cities</span>UMTYMP Calculus IA</li>
+                  <li><span class="course-code">MATH 1472 · UMN Twin Cities</span>UMTYMP Calculus IB</li>
+                  <li><span class="course-code">MATH 1473 · UMN Twin Cities</span>UMTYMP Calculus IIA</li>
+                  <li><span class="course-code">MATH 2471 · UMN Twin Cities</span>UMTYMP Calculus IIB</li>
+                  <li><span class="course-code">MATH 2472 · UMN Twin Cities</span>UMTYMP Calculus IIIA</li>
+                  <li><span class="course-code">MATH 2473 · UMN Twin Cities</span>UMTYMP Calculus IIIB</li>
+                </ul>
+                <h4>Mechanical Engineering &amp; Physical Sciences</h4>
+                <ul class="course-list" role="list">
+                  <li><span class="course-code">AEM 2021 · UMN Twin Cities</span>Statics &amp; Dynamics</li>
+                  <li><span class="course-code">ME 70 · Stanford</span>Introductory Fluids Engineering</li>
+                  <li><span class="course-code">ME 131 · Stanford</span>Heat Transfer</li>
+                  <li><span class="course-code">ME 3331 · UMN Twin Cities</span>Thermodynamics</li>
+                  <li><span class="course-code">PHYS 1301W · UMN Twin Cities</span>Physics for Scientists and Engineers I</li>
+                  <li><span class="course-code">AST 2001 · UMN Twin Cities</span>Fundamental Astrophysics</li>
+                  <li><span class="course-code">CEE 63 · Stanford <span class="course-status">· In progress</span></span>Weather and Storms</li>
+                </ul>
+                <h4>Life Sciences &amp; Chemistry</h4>
+                <ul class="course-list" role="list">
+                  <li><span class="course-code">NSCI 2101 · UMN Twin Cities</span>Human Neuroanatomy</li>
+                  <li><span class="course-code">NSCI 3101 · UMN Twin Cities</span>Neurobiology I: Molecular and Cellular Systems</li>
+                  <li><span class="course-code">BIOL 1009 · UMN Twin Cities</span>General Biology</li>
+                  <li><span class="course-code">CHEM 1061 · UMN Twin Cities</span>Chemical Principles I</li>
+                  <li><span class="course-code">CHEM 1065 · UMN Twin Cities</span>Chemical Principles I Lab</li>
+                </ul>
+                <h4>Humanities &amp; Social Sciences</h4>
+                <ul class="course-list" role="list">
+                  <li><span class="course-code">COMM 166 · Stanford</span>Virtual People</li>
+                  <li><span class="course-code">COLLEGE 118 · Stanford</span>Global Capitals: How Cities Shape Cultures, States, and People</li>
+                  <li><span class="course-code">ESF 18 · Stanford</span>Between Gods and Beasts: The Struggle for Humanity</li>
+                  <li><span class="course-code">PWR 2EE · Stanford <span class="course-status">· In progress</span></span>Writing &amp; Rhetoric 2: Once Upon a Cause: The Rhetoric of Picture Books</li>
+                  <li><span class="course-code">GER 1003 · UMN Twin Cities</span>Intermediate German</li>
+                  <li><span class="course-code">GER 1004 · UMN Twin Cities</span>Intermediate German</li>
+                  <li><span class="course-code">POL 1054 · UMN Twin Cities</span>Politics Around the World</li>
+                  <li><span class="course-code">ENGL 1301W · UMN Twin Cities</span>Multicultural Literature of the United States</li>
+                </ul>
+              </details>
+              <button class="view-link entry-resource" id="coursework-return" type="button"><span aria-hidden="true">←</span> Back to Poker view</button>
             </div>
           </details>
         </section>
@@ -1280,7 +1398,15 @@
           title.textContent = slot.querySelector(".card-title").textContent;
           const body = document.createElement("div");
           body.className = "portfolio-entry-body";
-          body.append(slot.querySelector("template").content.cloneNode(true));
+          const content = slot.querySelector("template").content;
+          const summary = content.querySelector(".entry-summary");
+          if (summary) {
+            const preview = document.createElement("span");
+            preview.className = "portfolio-entry-preview";
+            preview.textContent = summary.textContent;
+            title.append(preview);
+          }
+          body.append(content.cloneNode(true));
           entry.append(title, body);
           group.append(entry);
         });
@@ -1296,7 +1422,15 @@
       board.classList.add("is-list-view");
       list.hidden = false;
       viewToggle.setAttribute("aria-expanded", "true");
-      viewToggle.textContent = "View poker table";
+      viewToggle.textContent = "Poker view";
+    }
+
+    function showPoker() {
+      list.hidden = true;
+      coursework.open = false;
+      board.classList.remove("is-list-view");
+      viewToggle.setAttribute("aria-expanded", "false");
+      viewToggle.textContent = "List view";
     }
 
     viewToggle.addEventListener("click", () => {
@@ -1304,12 +1438,13 @@
         showList();
         document.getElementById("portfolio-list-title").focus();
       } else {
-        list.hidden = true;
-        coursework.open = false;
-        board.classList.remove("is-list-view");
-        viewToggle.setAttribute("aria-expanded", "false");
-        viewToggle.textContent = "View portfolio as a list";
+        showPoker();
       }
+    });
+
+    document.getElementById("coursework-return").addEventListener("click", () => {
+      showPoker();
+      courseworkLink.focus();
     });
 
     courseworkLink.addEventListener("click", () => {
